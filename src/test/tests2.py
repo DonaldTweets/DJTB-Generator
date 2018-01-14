@@ -18,7 +18,7 @@ ap.add_argument('-hidden_dim', type=int, default=600)
 ap.add_argument('-generate_length', type=int, default=240)
 ap.add_argument('-nb_epoch', type=int, default=20)
 ap.add_argument('-mode', default='train')
-ap.add_argument('-weights', default='')
+ap.add_argument('-weights', default='checkpoint_layer_2_hidden_600_epoch_70.hdf5')
 args = vars(ap.parse_args())
 
 DATA_DIR = args['data_dir']
@@ -42,9 +42,6 @@ model.add(TimeDistributed(Dense(VOCAB_SIZE)))
 model.add(Activation('softmax'))
 model.compile(loss="categorical_crossentropy", optimizer="rmsprop")
 
-# On genere un texte avant l'entrainement --verifie que les poids soient aleatoires si c'est le cas
-generate_text(model, args['generate_length'], VOCAB_SIZE, ix_to_char)
-
 if not WEIGHTS == '':
     model.load_weights(WEIGHTS)
     nb_epoch = int(WEIGHTS[WEIGHTS.rfind('_') + 1:WEIGHTS.find('.')])
@@ -58,12 +55,12 @@ if args['mode'] == 'train' or WEIGHTS == '':
         model.fit(X, y, batch_size=BATCH_SIZE, verbose=1, nb_epoch=1)
         nb_epoch += 1
         generate_text(model, GENERATE_LENGTH, VOCAB_SIZE, ix_to_char)
-        if nb_epoch % 10 == 0:
-            model.save_weights('checkpoint_layer_{}_hidden_{}_epoch_{}.hdf5'.format(LAYER_NUM, HIDDEN_DIM, nb_epoch))
+        if nb_epoch % 120 == 0:
+            model.save('model_layer_{}_hidden_{}_epoch_{}.hdf5'.format(LAYER_NUM, HIDDEN_DIM, nb_epoch))
+            print("Model Saved...")
 
 # Sinon, on genere a partir des poids
 elif WEIGHTS == '':
-    # Loading the trained weights
     model.load_weights(WEIGHTS)
     generate_text(model, GENERATE_LENGTH, VOCAB_SIZE, ix_to_char)
     print('\n\n')
