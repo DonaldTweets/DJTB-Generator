@@ -1,3 +1,3 @@
-numpy
-tensorflow
+tensorflow or tensorflow-gpu
 keras
+numpy

@@ -9,7 +9,17 @@ OCC_LIMIT = 10
 
 
 def load_and_parse(filepath, verbose=True, pad_to_tweets=False, tweet_length=280):
+    """
+    Le nom est plutot equivoque. Charge le fichier txt de chemin 'filepath' et retire les artefacts de parsing
     
+    :param filepath: chemin d'acces vers le fichier (.txt contenant le texte brut des tweets)
+    :param verbose: affiche ou non l'etat d'avancement de l'algorithme
+    :param pad_to_tweets: permet de forcer les tweets à faire 'tweet_length' caracteres
+    :param tweet_length: longueur des tweets dans le cas pad_to_tweets=True
+    :return: charset: set contenant les caracteres uniques utilises dans le texte (moins ceux supprimes car trop peu
+    utilises.
+             text: string contenant le texte brut nettoye.
+    """
     if verbose:
         print("Starting Data parsing...\n")
     
@@ -74,13 +84,13 @@ def load_and_parse(filepath, verbose=True, pad_to_tweets=False, tweet_length=280
     return charset, text
 
 
-def format_data(charset, data, sequence_length):
+def format_data(charset, data, sequence_length, verbose_x=False):
     """
     
     :param sequence_length:
     :param charset: set contenant tous les caracteres utilises par le texte
     :param data: texte brut pre-nettoye (à l'aide de load_and_parse)
-    :return:
+    :return: x:
     """
     
     # Dictionnaire liant chaque caractere a un entier et vice-versa(necessaire pour que le reseau les comprenne !)
@@ -99,6 +109,9 @@ def format_data(charset, data, sequence_length):
     # Le gros du boulot. Remplissage de la matrice ligne par ligne.
     for i in range(0, len(data) // sequence_length):
         x_sequence = data[i * sequence_length:(i + 1) * sequence_length]
+        if verbose_x:
+            print(x_sequence)
+        
         x_sequence_ix = [char_to_ix[value] for value in x_sequence]
         
         input_sequence = np.zeros((sequence_length, vocab_size))
@@ -119,22 +132,36 @@ def format_data(charset, data, sequence_length):
 
 
 # Generation d'un texte utilisant un modele existant
-def generate_text(model, length, vocab_size, ix_to_char):
-    # On donne un seed (en la forme d'un caractere choisi aleatoirement)
-    ix = [np.random.randint(vocab_size)]
-    y_char = [ix_to_char[ix[-1]]]
-    x = np.zeros((1, length, vocab_size))
+def generate_text(model, length, vocab_size, ix_to_char, number=1, save_to_file=False, save_path="../data/generated",
+                  seed="6969"):
+    if number < 1:
+        return -1
     
-    for i in range(length):
-        # On ajoute le caractere predit a la sequence
-        x[0, i, :][ix[-1]] = 1
-        print(ix_to_char[ix[-1]], end = "")
-        ix = np.argmax(model.predict(x[:, :i + 1, :])[0], 1)
-        y_char.append(ix_to_char[ix[-1]])
-    return ('').join(y_char)
+    text_table = []
+    for k in range(number):
+        print(k, '\n')
+        # On donne un seed (en la forme d'un caractere choisi aleatoirement)
+        ix = [np.random.randint(vocab_size)]
+        y_char = [ix_to_char[ix[-1]]]
+        x = np.zeros((1, length, vocab_size))
+        
+        for i in range(length):
+            # On ajoute le caractere predit a la sequence
+            x[0, i, :][ix[-1]] = 1
+            print(ix_to_char[ix[-1]], end = "")
+            ix = np.argmax(model.predict(x[:, :i + 1, :])[0], 1)
+            y_char.append(ix_to_char[ix[-1]])
+        text_table.append(''.join(y_char))
+    
+    if save_to_file:
+        with open(save_path + seed, "w") as generated_tweets:
+            for j in range(len(text_table)):
+                generated_tweets.write(text_table[j])
+        
+    return text_table
 
 
 # --------------------------------TESTING------------------------------
 if __name__ == "__main__":
-    chars, txt = load_and_parse("./data/tweets_small_raw.txt", pad_to_tweets = True)
+    chars, txt = load_and_parse("./data/tweets_small_raw.txt", pad_to_tweets=True)
     x, y, v_s, tochar = format_data(chars, txt, 280)
