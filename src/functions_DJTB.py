@@ -132,7 +132,7 @@ def format_data(charset, data, sequence_length, verbose_x=False):
 
 
 # Generation d'un texte utilisant un modele existant
-def generate_text(model, length, vocab_size, ix_to_char, number=1, save_to_file=False, save_path="../data/generated",
+def generate_text(model, length, vocab_size, ix_to_char, number=1, save_to_file=False, save_path="../data/generated/",
                   seed="6969"):
     if number < 1:
         return -1
@@ -154,7 +154,7 @@ def generate_text(model, length, vocab_size, ix_to_char, number=1, save_to_file=
         text_table.append(''.join(y_char))
     
     if save_to_file:
-        with open(save_path + seed, "w") as generated_tweets:
+        with open(save_path + seed + ".txt", "w") as generated_tweets:
             for j in range(len(text_table)):
                 generated_tweets.write(text_table[j])
         

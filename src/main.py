@@ -22,7 +22,7 @@ ap.add_argument('-mode', default='train')
 ap.add_argument('-weights', default='')
 ap.add_argument('-model', default='')
 ap.add_argument('-padding', default=False)
-ap.add_argument('-save_to_file', default=False)
+ap.add_argument('-save_to_file', default=True)
 args = vars(ap.parse_args())
 
 arg_data_dir = args['data_dir']
@@ -79,7 +79,7 @@ if args['mode'] == 'train' or arg_weights == '':
         model.fit(X, y, batch_size=arg_batch_size, verbose=1, nb_epoch=1)
         nb_epoch += 1
         generate_text(model, arg_generate_length, vocab_size, ix_to_char, number=10, save_to_file=arg_save_to_file,
-                      seed=str(id_generation)+str(nb_epoch))
+                      seed=str(id_generation) + "_" + str(nb_epoch))
         
         if nb_epoch % 5 == 0:
             # Serialisation du modele
