@@ -156,7 +156,7 @@ def generate_text(model, length, vocab_size, ix_to_char, number=1, save_to_file=
     if save_to_file:
         with open(save_path + seed + ".txt", "w") as generated_tweets:
             for j in range(len(text_table)):
-                generated_tweets.write(text_table[j])
+                generated_tweets.write(text_table[j] + "\n")
         
     return text_table
 
